@@ -12,7 +12,7 @@ tags:
 
 Ever need to write a short script as part of development to get feedback on a portion of code? Ever need to add private authentication values to that script? Ever wanted to add the script to source control but couldn't because it contained your private authentication?
 
-> Enter: AWS Parameter Store.
+> Enter: AWS Parameter Store
 
 This AWS service acts as a key-value store. Add your private settings such as usernames, passwords, connection strings etc and they can be retrieved programatically by their key name. This lets you commit your handy script to source control by keeping it free from private values.
 
