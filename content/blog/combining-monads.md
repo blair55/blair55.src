@@ -206,9 +206,11 @@ val it : Result<string,string> * string list =
 
 ## Discussion
 
-The `WriterResult` and `AsyncWriterResult` types implicitly return on the [error track](https://fsharpforfunandprofit.com/posts/recipe-part2/) when an `Error` case is encountered. But what if you want to log after even after an error?
+The `WriterResult` and `AsyncWriterResult` types implicitly return on the [error track](https://fsharpforfunandprofit.com/posts/recipe-part2/) when an `Error` case is encountered meaning any `do!` log will not be evaluated after any `let!` that returns an `Error`. As demonstrated above. But what if you _do_ want to log after receiving an `Error`?
 
-The `measure` function below lets you time a function call that returns a `AsyncWriterResult`. Having unwrapped the outer `Async` type by invoking the function with a `unit` we have a `WriterResult`. We run this to get at our inner `Result` and any logs written. We don't care which case our `Result` is because we want to write the elapsed time in either case. We can just bundle up our `Result` with concatenated logs in a new `Writer` and using `return!` because we have a fully formed `AsyncWriterResult` by the end of the statement.
+Lets say we want to log the duration of a function call that returns a `AsyncWriterResult`. We can only know the elapsed time after the function has completed. However, if the function results in an `Error` we don't have the opportunity to stop the clock or write the log!
+
+The `measure` function below can help us out. By unwrapping the outer `Async` type by invoking the function with a `unit` we have a `WriterResult`. We run this to get at our inner `Result` and any logs written. We don't care which case our `Result` is because we want to write the elapsed time in either case. We can just bundle up our `Result` with the concatenated logs in a new `Writer` and using `return!` because we have a fully formed `AsyncWriterResult` already at the end of the expression.
 
 ```fsharp
 let measure name f = asyncWriterResult {
@@ -226,6 +228,7 @@ let failToGetThing x = async {
 let expr x = asyncWriterResult {
   do! write "getting thing"
   let! thing = measure "elapsed" <| fun () -> failToGetThing x
+  do! write "returning thing"
   return thing }
 ```
 
