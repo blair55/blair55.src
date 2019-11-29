@@ -1,6 +1,6 @@
 ---
-title: "A functional wrapper around Dynamo DB"
-date: 2019-12-01T11:00:00
+title: "A functional wrapper around the .net AWS DynamoDB SDK"
+date: 2019-11-29T10:00:00Z
 draft: false
 tags:
     - fsharp
@@ -10,20 +10,20 @@ tags:
     - dynamodb
 ---
 
-# A functional wrapper around the .net AWS DynamoDB SDK
-
-A tour of F# capabilities used to enforce the constraints of the DynamoDB client at compile time.
+We're going to take a tour of some F# capabilities and
+use them to enforce the constraints of the DynamoDB client.
 We'll look at domain modeling with discriminated unions,
 data access using the reader applicative,
 and error handling with the result type.
 
-## Data Types
+## DynamoDB and Data Types
 
-DynamoDB is a key-value & document database.
-DynamoDB tables are schemaless so each record can contain a different number of attributes. 
-A record attribute has a string name and a value that is one of three types:
+Before we get started, let's summarise DynamoDB and its [supported types](https://docs.aws.amazon.com/en_pv/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html).
+
+* DynamoDB is a key-value & document database.
+* DynamoDB tables are schemaless so each record can contain a different number of attributes. 
+* A record attribute has a string name and a value that is one of three types:
 Scalar, Set, and Document.
-Below is a summary of the [full data type documentation](https://docs.aws.amazon.com/en_pv/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html).
 
 A **Scalar** is a single value of a particular primitive type:
 string, number, boolean, binary or null.
@@ -60,9 +60,12 @@ This description of the data types is enough to start building a Write Model.
 **We're going to build a layer between our code and the AWS SDK**,
 so let's review the exposed API.
 
-```$ paket add AWSSDK.DynamoDBv2```
+```bash
+$ paket add AWSSDK.DynamoDBv2
+```
 
-The DynamoDB client type exposes a `PutItemAsync` method for writing records to a table.
+The `AmazonDynamoDBClient` type exposes a `PutItemAsync` method for
+writing records to a table.
 This method takes two parameters, the target table name as a `string` and a `Dictonary<string, AttributeValue>` of attributes to write.
 The dictionary is what we're interested in building with our model.
 Here's an example of directly interfacing with the library to write an item.
@@ -356,7 +359,7 @@ type Order =
   { Name : string
     Description : string
     IsVerified : bool
-    Merchant : Merhant // new field
+    Merchant : Merchant // new field
     Quantity : int
     Cost : float }
 
@@ -381,8 +384,8 @@ let readOrder =
 ### Result Reader
 
 In our example, we are reading items from the `Dictionary` unsafely.
-Let's introduce the `Result` type to help us handle errors gracefully
-and better support for reading optional fields on our domain objects.
+Let's introduce the `Result` type to help us handle errors more gracefully
+and provide better for support optional fields on our domain objects.
 
 ```fsharp
 module ReaderResult =
@@ -493,10 +496,10 @@ We've only just scratched the surface of the .net library for DynamoDB.
 There are plenty more features to model functionally,
 including paging, updating and filter expressions.
 If you need a feature-complete library then check out
-(FSharp.AWS.DynamoDB)[https://github.com/fsprojects/FSharp.AWS.DynamoDB].
+[FSharp.AWS.DynamoDB](https://github.com/fsprojects/FSharp.AWS.DynamoDB).
 
 This article mainly intends to show an example of domain modeling 
 and the reader applicative, but the green-shoots of a more holistic
 DynamoDB library are visible!
 
-Happy F# Advent Calendar 2019! :-D
+Happy F# Advent Calendar 2019!

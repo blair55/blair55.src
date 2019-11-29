@@ -33,7 +33,7 @@ pygmentsUseClasses = true
 	# Site meta description
 	description = "Sweet little Hugo's theme for personal website or blog."
 	# Site's Tagline (Subtitle or Keyword)
-	tagline = "Nothing sweeter than this"
+	tagline = "Nick talks tech"
 	# If true give attribution to this theme
 	themeAttrib = true
 	# URL to license file, can be outside of your domain
