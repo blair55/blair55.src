@@ -39,7 +39,9 @@ pygmentsUseClasses = true
 	# URL to license file, can be outside of your domain
 	licenseURL = "/about/license"
 
+	mainSections = ["blog"]
 	# Configure which section for Latest Posts
+	postSections = ["blog"]
 	postSection = "blog"
 	# Configure which section for Latest Works
 	workSection = "work"
