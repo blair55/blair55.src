@@ -3,15 +3,15 @@ title: "Serverless package done right"
 date: 2019-04-01T11:36:05+01:00
 draft: false
 tags:
-    - aws
-    - parameter-store
-    - serverless
-    - bash
+  - aws
+  - parameter-store
+  - serverless
+  - bash
 ---
 
 ## Problem
 
-The severless framework [package command](https://serverless.com/framework/docs/providers/aws/guide/packaging/) claims to be useful in CI/CD workflows. The command produces cloud formation stacks json files on disk that can be bundled and considered the 'deployment artifacts' at the end of the pipeline. These artifacts can be provided to the `serverless deploy` command that could be run at a later date.
+The Severless Framework [package command](https://serverless.com/framework/docs/providers/aws/guide/packaging/) claims to be useful in CI/CD workflows. The command results in the production of AWS Cloud Formation stack json files (or alternative cloud provider equivalent) on disk. These files can be bundled and considered the 'deployment artifact' at the end of the pipeline. The artifact can be provided to the `serverless deploy` command that could be run at a later date.
 
 This two-step package/deploy process is very familiar, so I was lured into using the `serverless package` command. However, there is a major flaw in the design!
 
@@ -27,13 +27,14 @@ Let's say we change the value of an environment variable after packaging for the
 
 ## Just-in-time Packaging
 
-The only realistic option is to postpone the package step, i.e. don't call it explicitly. The package command is implicitly called within the deploy command (as long as the `--package` parameter is not provided). This package command deference is what happens when you call `serverless deploy` against your serverless.yml. The environment variables are baked-in 'just-in-time' so the artifacts are fit for the target environment.
+The only realistic option is to postpone the package step, i.e. don't call `serverless package` explicitly. The package command is implicitly called within the deploy command (as long as the `--package` parameter is not provided). This package command deference is what happens when you call `serverless deploy` against your serverless.yml. The environment variables are baked-in 'just-in-time' so the artifacts are fit for the target environment.
 
-We need to bring just-in-time packaging to CI in order to produce environment-agnostic build artifacts. The simple solution is to bundle the serverless.yml file into the artifact. The deployment tooling must then execute the serverless deploy command against the bundled serverless.yml.
+We need to bring just-in-time packaging to CI to produce environment-agnostic build artifacts. The solution is to neglect the `serverless package` command and include the serverless.yml file into the build artifact. The deployment tooling must then execute the `serverless deploy` command against the serverless.yml from within the artifact sometime later.
 
-In order to make the bundle completely self-contained the package.json file is also required alongside the serverless.yml. You could include your node_modules folder, or simply your package-lock.json or yarn.lock file and include a call to restore packages before `serverless deploy` is called, as shown below:
+To make the bundle completely self-contained the `package.json` file is also required alongside the serverless.yml. You could include your node_modules folder, or simply your `package-lock.json` or `yarn.lock` file and include a call to restore packages before `serverless deploy` is called, as shown below:
 
 Build artifact contents
+
 ```bash
 $ tree ./deploy
 .
@@ -44,14 +45,16 @@ $ tree ./deploy
 ```
 
 Serverless.yml package snippet
+
 ```yml
 package:
   artifact: package.zip
 ```
 
 Deployment steps
+
 ```bash
 $ cd ./deploy
 $ yarn install
-$ yarn run serverless deploy --stage production
+$ yarn run serverless deploy --stage prod
 ```

@@ -3,11 +3,11 @@ title: "A functional wrapper around the .net AWS DynamoDB SDK"
 date: 2019-11-29T10:00:00Z
 draft: false
 tags:
-    - fsharp
-    - functional
-    - monads
-    - aws
-    - dynamodb
+  - fsharp
+  - functional
+  - monads
+  - aws
+  - dynamodb
 ---
 
 We're going to take a tour of some F# capabilities and
@@ -20,10 +20,10 @@ and error handling with the result type.
 
 Before we get started, let's summarise DynamoDB and its [supported types](https://docs.aws.amazon.com/en_pv/amazondynamodb/latest/developerguide/HowItWorks.NamingRulesDataTypes.html).
 
-* DynamoDB is a key-value & document database.
-* DynamoDB tables are schemaless so each record can contain a different number of attributes. 
-* A record attribute has a string name and a value that is one of three types:
-Scalar, Set, and Document.
+- DynamoDB is a key-value & document database.
+- DynamoDB tables are schemaless so each record can contain a different number of attributes.
+- A record attribute has a string name and a value that is one of three types:
+  Scalar, Set, and Document.
 
 A **Scalar** is a single value of a particular primitive type:
 string, number, boolean, binary or null.
@@ -40,15 +40,15 @@ Below is an example record.
 
 ```json
 {
-  Day: "Monday",
-  UnreadEmails: 42,
-  ItemsOnMyDesk: [
+  "Day": "Monday",
+  "UnreadEmails": 42,
+  "ItemsOnMyDesk": [
     "Coffee Cup",
     "Telephone",
     {
-      Pens: { Quantity : 3 },
-      Pencils: { Quantity : 2},
-      Erasers: { Quantity : 1}
+      "Pens": { "Quantity": 3 },
+      "Pencils": { "Quantity": 2 },
+      "Erasers": { "Quantity": 1 }
     }
   ]
 }
@@ -66,7 +66,7 @@ $ paket add AWSSDK.DynamoDBv2
 
 The `AmazonDynamoDBClient` type exposes a `PutItemAsync` method for
 writing records to a table.
-This method takes two parameters, the target table name as a `string` and a `Dictonary<string, AttributeValue>` of attributes to write.
+This method takes two parameters, the target table name as a `string` and a `Dictionary<string, AttributeValue>` of attributes to write.
 The dictionary is what we're interested in building with our model.
 Here's an example of directly interfacing with the library to write an item.
 
@@ -101,7 +101,7 @@ We'll perform the conversion when we map our model to Attributes at runtime.
 We don't want to use the `AttributeValue` library type directly because it's cumbersome and error-prone.
 We also want to declare our attributes with minimum syntactical ceremony - the F# way!
 
-To achieve this, we can model the documented type cases with discriminated unions. 
+To achieve this, we can model the documented type cases with discriminated unions.
 Notice that the `DocList` case is a recursive type because it references itself,
 while the `DocMap` case is mutually recursive because it references the `Attr` type.
 
@@ -245,10 +245,10 @@ type Order =
     Cost : float }
 
 let buildOrder name desc isVerified qty cost =
-  { Name = name 
-    Description = description
-    IsVerified = isVerified 
-    Quantity = qty 
+  { Name = name
+    Description = desc
+    IsVerified = isVerified
+    Quantity = qty
     Cost = cost }
 ```
 
@@ -343,13 +343,13 @@ that will plug into a parent reader expression.
 
 ```fsharp
 type Merchant =
-  { Id : int 
+  { Id : int
     Region : string }
 
 let buildMerchant id region =
   { Id = id
     Region = region }
-  
+
 let readMerchant =
   buildMerchant
   <!> readNumber "id" int
@@ -364,11 +364,11 @@ type Order =
     Cost : float }
 
 let buildOrder name desc isVerified merchant qty cost =
-  { Name = name 
+  { Name = name
     Description = description
     IsVerified = isVerified
     Merchant = merchant
-    Quantity = qty 
+    Quantity = qty
     Cost = cost }
 
 let readOrder =
@@ -410,7 +410,7 @@ There is no type definition required as
 the `map` and `apply` functions return a
 composed type: `Reader<'a,Result<'b,'c>>`.
 
-Notice that the `apply` function 
+Notice that the `apply` function
 has to pattern patch against two `Result`s.
 The function inside the first result is
 applied to the value inside the second result
@@ -478,7 +478,7 @@ let buildOrder name orderId fulfilled tags =
     OrderId = orderId
     Fulfilled = fulfilled
     Tags = tags }
-  
+
 let readOrder =
   buildOrder
   <!> readString "name"
@@ -498,8 +498,7 @@ including paging, updating and filter expressions.
 If you need a feature-complete library then check out
 [FSharp.AWS.DynamoDB](https://github.com/fsprojects/FSharp.AWS.DynamoDB).
 
-This article mainly intends to show an example of domain modeling 
-and the reader applicative, but the green-shoots of a more holistic
-DynamoDB library are visible!
+This article mainly intends to show an example of domain modeling
+and the reader applicative, but the green shoots of a new library are visible!
 
 Happy F# Advent Calendar 2019!
