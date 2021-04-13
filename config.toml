@@ -3,7 +3,7 @@ title = "Tech Nick"
 theme = "manis"
 
 # Copyright notice. Note: You can use HTML tag here
-copyright = "&copy; 2018 Nicholas Blair"
+# copyright = "&copy; 2021 Nicholas Blair"
 pluralizeListTitles = false
 
 # Minimum number of posts before paginate navigation show up
@@ -31,20 +31,20 @@ pygmentsUseClasses = true
 	# List of sections support disqus comments
 	disqusSections = []
 	# Site meta description
-	description = "Sweet little Hugo's theme for personal website or blog."
+	description = "Nick talks tech"
 	# Site's Tagline (Subtitle or Keyword)
 	tagline = "Nick talks tech"
 	# If true give attribution to this theme
-	themeAttrib = true
+	themeAttrib = false
 	# URL to license file, can be outside of your domain
-	licenseURL = "/about/license"
+	# licenseURL = "/about/license"
 
-	mainSections = []
 	# Configure which section for Latest Posts
-	postSections = ["blog"]
+	mainSections = ["blog", "post"]
+	# postSections = ["blog", "post"]
 	postSection = "blog"
 	# Configure which section for Latest Works
-	workSection = "work"
+	# workSection = "work"
 
 	# 404 Configuration
 	head404 = "Sorry, I can't find what you want."
@@ -53,7 +53,7 @@ pygmentsUseClasses = true
 	# Color of your website's accent
 	colorTheme = "#ff8181"
 	# Maximum number of item in Latest Posts or Works
-	latestCount = 3
+	latestCount = 10
 	# Path to site's favicon image
 	faviconImg = ""
 	# Date format in item list
