@@ -29,7 +29,7 @@ pygmentsUseClasses = true
 	customCSS = []
 	
 	# List of sections support disqus comments
-	disqusSections = [ "blog" ]
+	disqusSections = []
 	# Site meta description
 	description = "Sweet little Hugo's theme for personal website or blog."
 	# Site's Tagline (Subtitle or Keyword)
@@ -39,7 +39,7 @@ pygmentsUseClasses = true
 	# URL to license file, can be outside of your domain
 	licenseURL = "/about/license"
 
-	mainSections = ["blog"]
+	mainSections = []
 	# Configure which section for Latest Posts
 	postSections = ["blog"]
 	postSection = "blog"
@@ -62,7 +62,7 @@ pygmentsUseClasses = true
 	# Code Highlighting (HighlightJS)
 	highlightJs = false
 	highlightJsLanguages = [ "go" ]
-	highlightJsStyle = "ocean"
+	highlightJsStyle = "Github"
 
 	# Social Links
 	# email = "mail@yurizal-san.com"

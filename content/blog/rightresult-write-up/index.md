@@ -14,9 +14,13 @@ tags:
 
 
 
-# About the design
+---
 
-## What was the original problem or opportunity that inspired this work?
+## About the design
+
+---
+
+### What was the original problem that inspired this work?
 
 [RightResult](https://rightresu.lt) is the SAAS incarnation of a game my friend would coordinate via emails and a spreadsheet.
 
@@ -24,10 +28,11 @@ Each week, my friend would email game members requesting predictions for the wee
 
 I built a product to ease the coordination burden and improve the experience for members. It also serves as a technical laboratory with real challenges.
 
-> Emphasized links refer to _[source code](https://github.com/blair55/rightresult)_.
+Emphasized links refer to _[source code](https://github.com/blair55/rightresult)_.
 
+---
 
-## What is your solution's approach?
+### What is your solution's approach?
 
 RightResult automates-away most of the game coordination responsibilities. The application sources the weekly fixtures and follows up with the results. This reduces the human effort and improves reliability.
 
@@ -39,16 +44,15 @@ All members enter into a Global League that ranks all members over the course of
 
 The application supports push notifications on supported platforms. Subscribed members are informed when new fixtures are added. My friend supplements the experience with emails. Winners are announced and a sense of community is preserved.
 
+---
 
+### How is your solution used?
 
+Please enjoy the [walkthrough video](https://www.loom.com/share/512a0cd2f3ce4a4c9ba2bd4e5b6b6784)!
 
-## How is your solution used?
+---
 
-Please enjoy the ![walkthrough video](https://www.loom.com/share/512a0cd2f3ce4a4c9ba2bd4e5b6b6784)!
-
-
-
-## What forces were you designing for, or what system quality attributes did you focus on and why?
+### What forces were you designing for?
 
 The priorities were clear because my friends and I were members of the original game. The driving force was the desire to reduce burden and modernise the experience. There was little doubt that a web-based product would bring these benefits. As I was willing to pay the cost of development with my own time, there was no downside to consider.
 
@@ -58,19 +62,21 @@ The only data persisted was predictions and results. To view a league table, the
 
 The latest iteration improves on maintainability with the choice to use F#. The power of the type system is leveraged throughout the stack. I have confidence in changes even when the domain is not fresh in my mind. The response time remains low throughout the season because each view is eagerly-evaluated. This is discussed further in the architecture section.
 
+---
 
-
-
-## What alternate solutions did you consider?
+### What alternatives did you consider?
  
 I was curious about graph databases. The second iteration of RightResult allowed me to solve a real problem with graph technology. I used [Neo4j](https://neo4j.com/) to persist relationships between members and private leagues. I took the time to up-skill and satisfy my curiosity. On reflection, the choice has not added significant value to the product. Although, there is value in the experience gained learning any new technology.
 
 The power of graph databases is only realised in a relationship-rich domain. The potential to gain insight grows with the number of distinct relationship types. The member/league relationship is naturally shallow so there is little explorative potential. A simpler alternative would have been a relational database like MySql or Postgres. The time spent up-skilling represents lost opportunity-cost.
 
+---
 
-# About the implementation
+## About the implementation
 
-## How's your solution architected?
+---
+
+### How is your solution architected?
 
 At the code-level, RightResult is based on the [SAFE stack](https://safe-stack.github.io/) application model. This means F# is used on the frontend and backend. I used [Fable.Remoting](https://zaid-ajaj.github.io/Fable.Remoting/) to share a _[domain model](https://github.com/blair55/rightresult/blob/master/src/Server/Events.fs)_ across the both client and server applications. This maximises compiler support.
 
@@ -80,11 +86,15 @@ The client application uses the [Elmish](https://elmish.github.io/) framework. T
 
 An example command is 'decrement score'. The output would be a 'score decremented' event if the state holds a score greater than zero. Otherwise, no events are returned. This highlights when input is validated, and is summarised by the function signature:
 
-```(command * state) -> event list```
+```
+(command * state) -> event list
+```
 
 Next, the elmish framework calls a _[function](https://github.com/blair55/rightresult/blob/master/src/Client/Areas/Leagues/LeagueHistory.fs/#L145-L157)_ to apply the state change caused by the event. The 'score decremented' event will cause the score in the application state to reduce by one. The output of the function is the updated application state: 
 
-```(event * state) -> state```
+```
+(event * state) -> state
+```
 
 The state is used to render the view using a _[function](https://github.com/blair55/rightresult/blob/master/src/Client/Areas/Leagues/CreateLeague.fs/#L43-L61)_ provided to the elmish framework. This continuous, iterative application of 'event on state' constitutes the [Model View Update pattern](https://guide.elm-lang.org/architecture/) (MVU). It can be thought of as the [fold function](https://fsharp.github.io/fsharp-core-docs/reference/fsharp-collections-listmodule.html#fold) at the application-level. Each step is pure, causing no side-effects and requiring no shared state [(the root of all evil!)](https://henrikeichenhardt.blogspot.com/2013/06/why-shared-mutable-state-is-root-of-all.html).
 
@@ -96,18 +106,19 @@ An example of a server application event is 'Fixture Classified'. This is when t
 
 Traffic volume is low enough that the entire application can be hosted on a single Digital Ocean [droplet](https://docs.digitalocean.com/products/droplets/) (virtual machine). Nginx hosts the TLS certificate. The server application, proxy, and database components are provisioned using [docker-compose](https://docs.docker.com/compose/). The Event Store container is configured with a volume so events are persisted to disk. The diagram below is scoped to the component level of architecture.
 
-![architecture](https://whimsical.com/embed/Gh3ctmXKR6eTAGoovXxWAZ@2Ux7TurymN1Q9vdbYTAM)
+![architecture](architecture.png)
 
+---
 
-## What's a compromise or trade-off you had to make?
+### What's a compromise you had to make?
 
 The single-instance hosting approach is one giant trade-off. The application will not scale if a traffic spike occurred. However, rearchitecting for scalability would be expensive. The risk of increased traffic is low, and the audience is not globally distributed. This a therefore an acceptable compromise for now.
 
 Background-tasks such as result fetching are coupled to the web application. Tasks are scheduled using a _[timeout](https://github.com/blair55/rightresult/blob/master/src/Server/Server.fs/#L510-L514)_ running inside a [hosted service](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/hosted-services?view=aspnetcore-5.0&tabs=visual-studio). A preferable solution would be to break-out the background tasks into containers. They would operate at the same level, and have a sibling relationship with the web application rather than a parent/child one. Independently managed tasks would decouple the concepts and reduce resource contention. This code-level compromise saved development time and keeps the packaging process simple.
 
+---
 
-
-## If you had a week to develop it further, how would you spend it?
+### If you had a week to develop it further, how would you spend it?
 
 I would add value by developing game features. A live-score feature would supplement the UI for in-play fixtures. Members have also suggested richer prediction rules. The changes would support more ways to award points for each fixture. The event stream could be replayed against the new rules to observe the effect on historic winners.
 
@@ -115,28 +126,28 @@ I would like to further _gamify_ the product. Historic winners and rare achievem
 
 I would like to automate the TLS certificate renewal to reduce operational overhead. The next iteration of RightResult will be built using serverless technology such as [AWS lambda](https://aws.amazon.com/lambda/). This will further reduce running costs and increase scalability.
 
-My priorities would be different if the question was "If you hired a team what would you do next?". The continuous integration pipeline would be enhanced with more tests. Effort would be invested in developer workflow to improve productivity. Test-data generation and temporary stack support would aid issue-reproduction.
+If the question was "what would you do with a team of engineers?" then my priorities would be different. The _[continuous integration](https://github.com/blair55/rightresult/blob/master/.github/workflows/publish.yml)_ pipeline would be enhanced with more tests. Effort would be invested in developer workflow to improve productivity. Test-data generation and temporary stack support would aid issue-reproduction.
 
+---
 
-
-## If you had a week less to develop it, what would you have done differently?
+### If you had a week less to develop it, what would you have done differently?
 
 Push notifications were most recently added to the application. This non-core feature was not required for launch.
 
+---
 
-
-
-## What would change about the delivery if you were to work on something similar?
+### What would change about the delivery?
 
 The fundamental approach would not change significantly. Core features and Job(s)-To-Be-Done would be prioritised for the MVP. Further features would be delivered incrementally. Feature toggling could be applied on a per-member basis to get feedback with minimal risk.
 
 Member-led explorative testing before the season begins would help polish the rough edges. Load and performance tests would define the bounds of the application. Knowing the threshold means I can make an informed hosting choice rather than hoping for the best. 
 
+---
 
-
-
-## How did you get feedback to assess how well your solution addresses the problem?
+### How did you get feedback?
 
 Many of my friends are members of the game. We have candid conversations about the suitability of existing features and the priority of new ones. Qualitative feedback from members beyond my circle of friends comes via social media. The email channel also receives suggestions and bug reports. I experimented with a feedback form in the application but gained little insight.
 
 The Neo4j database allows for quantitive analysis. However, the answers to questions like "how many members are in more than one league with the same member" are worth little with a low sample-size. Off-the-shelf analytics platforms would be excessive solutions for the same reason. I will think critically about the questions I want to answer when the product matures. The strategic objectives and velocity could be measured empirically. For now, it remains a hobby that helps to bind a group of friends.
+
+---
