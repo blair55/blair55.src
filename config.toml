@@ -7,7 +7,7 @@ theme = "manis"
 pluralizeListTitles = false
 
 # Minimum number of posts before paginate navigation show up
-paginate = 10
+pagination.pagerSize = 10
 
 # Your disqus shortname
 disqusShortname = ""
