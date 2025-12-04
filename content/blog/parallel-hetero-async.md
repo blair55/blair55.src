@@ -1,8 +1,7 @@
 ---
 title: "Parallelising Heterogeneous Async Calls"
 date: 2025-12-04T00:00:00Z
-draft: true
-featured: true
+draft: false
 tags:
   - fsharp
   - parallelism
@@ -13,7 +12,7 @@ tags:
 
 This is a post for the [FSharp Advent Calendar 2025](https://sergeytihon.com/2025/11/03/f-advent-calendar-in-english-2025/).
 
-Some of the changes in F# 10 got me thinking about approaches to parallelism, past and present.
+A particular feature of F# 10 got me thinking about approaches to parallelism, past and present.
 
 ### Async.Parallel
 
@@ -50,7 +49,7 @@ let getActivePromotion (): Async<Promotion Option> = async { ... }
 type DashboardData = UserDetails * Notice List * Promotion Option
 ```
 
-We could _**unify**_ the return types in order to leverage `Async.Parallel`. There's no good reason to use this approach, though I have used it in the past!
+We could _**unify**_ the return types in order to leverage `Async.Parallel`. There's no good reason to use this approach anymore, though I have used it in the past!
 
 ```fsharp
 // Unifying type

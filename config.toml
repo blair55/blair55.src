@@ -9,9 +9,6 @@ pluralizeListTitles = false
 # Minimum number of posts before paginate navigation show up
 pagination.pagerSize = 100
 
-# Your disqus shortname
-disqusShortname = ""
-
 # Edit this if you want to translate your blog
 defaultContentLanguage = "en"
 
@@ -63,34 +60,18 @@ defaultContentLanguage = "en"
 	# Date format in item list
 	dateFmt = "Jan 02, 2006"
 
-	# Code Highlighting (HighlightJS)
-	# highlightJs = false
-	# highlightJsLanguages = [ "go" ]
-	# highlightJsStyle = "Github"
-
-	# Social Links
-	# email = "mail@yurizal-san.com"
-	github = "https://github.com/blair55"
-	bluesky = "https://bsky.app/profile/nickblair.dev"
-
-
-# Language Configuration
-#[languages.in]
-#	lang = "in"
-#	languageName = "Bahasa Indonesia"
-#	weight = 1
 
 
 [[params.nav.custom]]
 	title = "About"
-	url = "/about"
+	url = "https://nickblair.dev/"
 [params.profile]
   enable = true
   avatar = "/img/avatar.jpg"
 #   name = "XXX"
 #   bio = "XXX"  # support markdown syntax
-  twitter = "XXX"  # https://twitter.com/XXX
   github = "blair55"  # https://github.com/blair55
+  bluesky = "nickblair.dev"  # https://bsky.app/profile/nickblair.dev
 
 # [params.rtwt]
 #   sidePane = true
