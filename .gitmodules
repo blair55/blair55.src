@@ -2,3 +2,6 @@
 	path = public
 	url = git@github.com:blair55/blair55.github.io.git
 	branch = master
+[submodule "themes/hugo-notepadium"]
+	path = themes/hugo-notepadium
+	url = https://github.com/blair55/hugo-notepadium.git
