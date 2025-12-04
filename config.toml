@@ -1,13 +1,13 @@
 baseURL = "https://blair55.github.io"
 title = "Tech Nick"
-theme = "manis"
+theme = "hugo-notepadium"
 
 # Copyright notice. Note: You can use HTML tag here
 # copyright = "&copy; 2021 Nicholas Blair"
 pluralizeListTitles = false
 
 # Minimum number of posts before paginate navigation show up
-pagination.pagerSize = 10
+pagination.pagerSize = 100
 
 # Your disqus shortname
 disqusShortname = ""
@@ -16,8 +16,12 @@ disqusShortname = ""
 defaultContentLanguage = "en"
 
 # Code Highlighting (Chroma)
-pygmentsCodeFences = true
-pygmentsUseClasses = true
+# pygmentsCodeFences = true
+# pygmentsUseClasses = true
+
+[markup]
+  [markup.highlight]
+    style = 'nord'
 
 [taxonomies]
 	tag = "tags"
@@ -60,9 +64,9 @@ pygmentsUseClasses = true
 	dateFmt = "Jan 02, 2006"
 
 	# Code Highlighting (HighlightJS)
-	highlightJs = false
-	highlightJsLanguages = [ "go" ]
-	highlightJsStyle = "Github"
+	# highlightJs = false
+	# highlightJsLanguages = [ "go" ]
+	# highlightJsStyle = "Github"
 
 	# Social Links
 	# email = "mail@yurizal-san.com"
@@ -75,3 +79,41 @@ pygmentsUseClasses = true
 #	lang = "in"
 #	languageName = "Bahasa Indonesia"
 #	weight = 1
+
+
+[[params.nav.custom]]
+	title = "About"
+	url = "/about"
+[params.profile]
+  enable = true
+  avatar = "/img/avatar.jpg"
+#   name = "XXX"
+#   bio = "XXX"  # support markdown syntax
+  twitter = "XXX"  # https://twitter.com/XXX
+  github = "blair55"  # https://github.com/blair55
+
+# [params.rtwt]
+#   sidePane = true
+#   countPageItems = 70
+
+# [params.rtwt.home]
+#   showBio = false
+#   showAuthorImg = true
+#   sidePaneTags = true
+#   showFeatured = true
+#   showRecent = true
+#   hideRecentWhenFeatured = true
+#   countRecent = 50
+
+# [params.rtwt.side.home]
+#   sidePaneSticky = false
+#   taxonomies = ['tags']
+#   countTaxonomy = 50
+
+# [params.rtwt.side.single]
+#   sidePaneSticky = true
+#   showDetails = false
+#   showTableOfContents = true
+#   showAttachments = true
+#   showRelated = false
+#   countRelated = 50

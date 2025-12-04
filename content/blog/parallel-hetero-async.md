@@ -1,32 +1,30 @@
 ---
 title: "Parallelising Heterogeneous Async Calls"
-date: 2025-12-01T10:00:00Z
+date: 2025-12-04T00:00:00Z
 draft: true
+featured: true
 tags:
   - fsharp
-  - functional
   - parallelism
   - concurrency
   - async
   - task
 ---
 
-## Sub title: What's the common name for this pattern?
+This is a post for the [FSharp Advent Calendar 2025](https://sergeytihon.com/2025/11/03/f-advent-calendar-in-english-2025/).
 
-> This is a post for the [FSharp Advent Calendar 2025](https://sergeytihon.com/2025/11/03/f-advent-calendar-in-english-2025/)
+Some of the changes in F# 10 got me thinking about approaches to parallelism, past and present.
 
-The [support for `and!` in task expressions](https://learn.microsoft.com/en-us/dotnet/fsharp/whats-new/fsharp-10#support-for-and-in-task-expressions) in F# 10 made me think about how I approach this with F# `Async`.
+### Async.Parallel
 
-### `Async.Parallel`
-
-This library function is built for orchestrating async calls with _homogenous_ return types. It has an overload that permits controlling the degree of parallelism.
+This system library function is built for orchestrating async calls with _homogenous_ return types. It has an overload that permits controlling the degree of parallelism.
 
 ```fsharp
 static member Parallel:
    computations: seq<Async<'T>> -> Async<'T array>
 ```
 
-It's great for situations where we want to make multiple calls to the same api endpoint with different arguments - because each call expects the same response, we end up with a collection of the response type.
+It's great for situations where we want to make multiple calls to the same api endpoint with different arguments - because each call expects the same response, we end up with a collection of the response type when all the calls are complete. And given the calls are made in parallel, we might only have to wait as long as the longest call.
 
 ```fsharp
 let fetchData i: Async<string> = ...
@@ -38,42 +36,21 @@ let it: string array =
   |> Async.RunSynchronously
 ```
 
-### Hetorogenous data
+### Hetorogenous Concurrency
 
-But what about when I want to make multiple calls to different endpoints? I.e. I'm expecting different looking data. Let's say we have to load some data for a dashboard when a user logs in. I have three calls to make that return heterogeneous data:
-
-```fsharp
-let getUserDetails userId: Async<UserDetails> = ...
-
-let getNotifications userId: Async<Notice List> = ...
-
-let getActivePromotion (): Async<Promotion Option> = ...
-```
-
-### F# 10
-
-I can make these calls sequentially. Or I can use the `task` computation expression with `and!` in F# 10 to achieve parallelism:
+But what about when we want to make multiple calls to different endpoints? i.e. We're expecting different looking data. Let's say we have to load some data for a dashboard when a user logs in. We have three calls to make that return _heterogeneous_ data:
 
 ```fsharp
-type DashboardData(Details: UserDetails, Notifications: Notice List, Promotion: Promotion Option) = 
-  member this.Details = Details
-  member this.Notifications = Notifications
-  member this.Promotion = Promotion
+let getUserDetails userId: Async<UserDetails> = async { ... }
 
- // tasks awaited concurrently with and! in F# 10
-let getDashboardData userId : Task<DashboardData> = task {
-  let! details = getUserDetails userId |> Async.StartAsTask
-  and! notifications = getNotifications userId |> Async.StartAsTask
-  and! promotion = getActivePromotion () |> Async.StartAsTask
-  return DashboardData(details, notifications, promotion)
-}
+let getNotifications userId: Async<Notice List> = async { ... }
+
+let getActivePromotion (): Async<Promotion Option> = async { ... }
+
+type DashboardData = UserDetails * Notice List * Promotion Option
 ```
 
-### Another Way
-
-But without F#10, and with only the `async` CE, how can we parallelise?
-
-We can _unify_ the types in order to leverage `Async.Parallel`.
+We could _**unify**_ the return types in order to leverage `Async.Parallel`. There's no good reason to use this approach, though I have used it in the past!
 
 ```fsharp
 // Unifying type
@@ -103,26 +80,26 @@ let getDashboardData userId : Async<DashboardData> =
       // verify expected data
       |> function
         | Some details, Some notifications, Some promotion ->
-            DashboardData(details, notifications, promotion)
+            details, notifications, promotion
         | _ -> failwith "Missing data"
   )
 
-module Async = // helper function
+module Async =
   let map f x = async {
     let! y = x
     return f y
   }
 ```
 
-This approach achieves the aim of making calls concurrently. But we can't ignore the downsides over the F# 10 `and!` method:
+This approach achieves making concurrent calls, but we can't ignore the downsides:
 
 * it requires an extra type and a helper function
 * it requires a fold function costing mental overhead
 * it requires extra logic to check all the calls have completed
-* it's fiddly to add or remove async calls
+* it's fiddly to add or remove calls
 * compiler support is lost / it might throw an exception!
 
-To illustrate the point about compiler support: the constructed list of `DashboardAsync`s could get out-of-sync with the verification logic before the return: we could, for example, accidentally omit the `getNotifications` call.
+To illustrate the point about compiler support: the constructed list of `DashboardAsync`s could become out-of-sync with the verification logic: we could, for example, accidentally omit the `getNotifications` call.
 
 ```fsharp
   [ getUserDetails userId |> Async.map GetUserDetails
@@ -131,14 +108,36 @@ To illustrate the point about compiler support: the constructed list of `Dashboa
   ]
 ```
 
-The code would compile happily but throw an exception at runtime - very un-F# like! We could mitigate by using the `Result` type to model the verification of the outcome, and also the async calls i.e. `AsyncResult`. Just depends what your stack can tolerate.
+The code would compile happily but throw an exception at runtime - very un-F# like! We could mitigate by using the `Result` type to model the verification of the outcome (and also the async calls i.e. `AsyncResult`) but it would add weight to the solution.
 
-## So what do we call this?
+### Async.StartChild
 
-Besides sharing this as a general pattern (despite its drawbacks), I'd love to know if this approach is already known to you, and if so what do you call it? I've used it for a few years without ever giving it an appropriate handle. Some suggestions:
+The obvious improvement here is to kick off the calls with `Async.StartChild`. Parallelism achieved with none of the downsides from the previous approach. However, StartChild function returns an `Async<Async<'T>>`, so we have to use another `let!` to get to the result.
 
-- Unification for Parallelism
-- Heterogeneous Concurrency
-- Compromised Promises(!)
+```fsharp
+let getDashboardData userId : Async<DashboardData> =
+  async {
+    let! detailsAsync = getUserDetails userId |> Async.StartChild
+    let! notificationsAsync = getNotifications userId |> Async.StartChild
+    let! promotionAsync = getActivePromotion () |> Async.StartChild
 
-Please let me know at [@nickblair.dev](https://bsky.app/profile/nickblair.dev)
+    let! details = detailsAsync
+    let! notifications = notificationsAsync
+    let! promotion = promotionAsync
+    return details, notifications, promotion
+  }
+```
+
+### F# 10
+
+The introduction of [support for `and!` in `task` expressions](https://learn.microsoft.com/en-us/dotnet/fsharp/whats-new/fsharp-10#support-for-and-in-task-expressions) in F# 10 brings the solution in its final form: Concurrent calls with almost no overhead. Map the result back to Async with `Async.AwaitTask` if required.
+
+```fsharp
+ // tasks awaited concurrently with and! in F# 10
+let getDashboardData userId : Task<DashboardData> = task {
+  let! details = getUserDetails userId |> Async.StartAsTask
+  and! notifications = getNotifications userId |> Async.StartAsTask
+  and! promotion = getActivePromotion () |> Async.StartAsTask
+  return details, notifications, promotion
+}
+```
